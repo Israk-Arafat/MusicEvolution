@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+venv/
+.venv/
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Environment / secrets
+.env
+.cache
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# Data — raw and processed files are too large for git
+data/raw/
+data/processed/
+data/cache/
+
+# OS
+.DS_Store
+Thumbs.db
