@@ -4,6 +4,12 @@ main.py — Full data pipeline runner.
 Run this once to build the merged dataset:
     python main.py
 
+Run in reverse, with its own cache file
+python main.py --reverse --cache-file data/cache/musicbrainz_cache_b.json
+
+Merge (Machine 1's cache_a takes priority over cache_b)
+python merge_caches.py data/cache/musicbrainz_cache.json data/cache/musicbrainz_cache_b.json
+
 Then open notebooks/analysis.ipynb for the analysis.
 
 Steps
