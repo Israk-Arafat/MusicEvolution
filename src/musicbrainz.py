@@ -74,7 +74,10 @@ class MusicBrainzEnricher:
         Search MusicBrainz for a recording matching (title, artist).
         Returns a dict of extracted fields or None if not found.
         """
-        query = f'recording:"{title}" AND artist:"{artist}"'
+        # Strip characters that break Lucene query syntax (quotes, colons, etc.)
+        safe_title = _sanitize_query(title)
+        safe_artist = _sanitize_query(artist)
+        query = f'recording:"{safe_title}" AND artist:"{safe_artist}"'
         try:
             # search_recordings does not accept 'includes' — that's only for get_recording_by_id
             result = musicbrainzngs.search_recordings(query=query, limit=5)
@@ -95,11 +98,11 @@ class MusicBrainzEnricher:
         try:
             detail = musicbrainzngs.get_recording_by_id(
                 best["id"],
-                includes=["releases", "tags", "artist-credits", "release-groups", "labels"],
+                includes=["releases", "tags", "artist-credits", "artists"],
             )
             best = detail.get("recording", best)
         except Exception as exc:
-            logger.debug("Could not fetch recording detail for %s: %s", best.get("id"), exc)
+            logger.warning("Could not fetch recording detail for %s: %s", best.get("id"), exc)
             # Fall back to the search result which has partial data
 
         return _extract_fields(best)
@@ -149,6 +152,18 @@ class MusicBrainzEnricher:
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
+
+def _sanitize_query(text: str) -> str:
+    """
+    Escape characters that break Lucene query syntax used by MusicBrainz.
+    Removes embedded quotes and strips leading/trailing punctuation that
+    causes parse errors (e.g. titles like '"B" Girls').
+    """
+    # Replace any double-quote with a space so the Lucene field boundary is preserved
+    text = text.replace('"', ' ').replace('\\', ' ')
+    # Collapse multiple spaces
+    return ' '.join(text.split())
+
 
 def _pick_best_match(recordings: list, title: str, artist: str) -> Optional[dict]:
     """Choose the recording whose title+artist best matches the query."""
@@ -204,8 +219,13 @@ def _extract_fields(rec: dict) -> dict:
     if years:
         release_year = min(years)
 
-    # Genre tags
+    # Genre tags — prefer recording tags, fall back to artist tags
     tags = [t["name"] for t in rec.get("tag-list", []) if isinstance(t, dict)]
+    if not tags:
+        credits = rec.get("artist-credit", [])
+        if credits and isinstance(credits[0], dict):
+            artist_tags = credits[0].get("artist", {}).get("tag-list", [])
+            tags = [t["name"] for t in artist_tags if isinstance(t, dict)]
 
     # Artist country
     artist_country = None

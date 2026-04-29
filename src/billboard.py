@@ -68,7 +68,7 @@ def _normalize_columns(df: pd.DataFrame) -> pd.DataFrame:
     for col in df.columns:
         if col in ("date", "chart_date", "chart_week", "week"):
             rename[col] = "chart_date"
-        elif col in ("rank", "this_week", "position", "chart_position"):
+        elif col in ("rank", "this_week", "position", "chart_position", "current_week"):
             rename[col] = "rank"
         elif col in ("song", "title", "track", "track_name", "name"):
             rename[col] = "title"
@@ -78,7 +78,7 @@ def _normalize_columns(df: pd.DataFrame) -> pd.DataFrame:
             rename[col] = "last_week"
         elif col in ("peak_position", "peak_pos", "peak"):
             rename[col] = "peak_position"
-        elif col in ("weeks_on_board", "weeks_on_chart", "weeks", "wks_on_chart"):
+        elif col in ("weeks_on_board", "weeks_on_chart", "weeks", "wks_on_chart", "wks.on.chart"):
             rename[col] = "weeks_on_chart"
     return df.rename(columns=rename)
 
