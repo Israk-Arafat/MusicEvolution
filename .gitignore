@@ -20,9 +20,9 @@ build/
 *.ipynb_checkpoints
 
 # Data — raw and processed files are too large for git
-# data/raw/
-# data/processed/
-# data/cache/
+data/raw/
+data/processed/
+data/cache/
 
 # OS
 .DS_Store
