@@ -22,7 +22,7 @@ build/
 # Data — raw and processed files are too large for git
 data/raw/
 data/processed/
-# data/cache/
+data/cache/
 
 # OS
 .DS_Store

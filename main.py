@@ -37,7 +37,7 @@ logger = logging.getLogger("pipeline")
 logging.getLogger("musicbrainzngs").setLevel(logging.WARNING)
 
 
-def run(limit: int = None):
+def run(limit: int = None, reverse: bool = False, cache_file: str = None):
     """
     Execute the full pipeline.
 
@@ -45,6 +45,12 @@ def run(limit: int = None):
     ----------
     limit : int, optional
         If set, only process the first `limit` unique songs (useful for testing).
+    reverse : bool, optional
+        Process songs in reverse alphabetical order. Use on a second machine so
+        it works from the Z-end while the first machine works from the A-end.
+    cache_file : str, optional
+        Path to a custom cache file. Use a different path on each machine so
+        they don't write to the same file concurrently.
     """
     # ── Step 1: Billboard ─────────────────────────────────────────────────────
     logger.info("═" * 60)
@@ -77,8 +83,8 @@ def run(limit: int = None):
     logger.info("  Progress is cached — safe to interrupt and resume")
     logger.info("═" * 60)
 
-    mb_enricher = MusicBrainzEnricher()
-    df_mb = mb_enricher.enrich(df)
+    mb_enricher = MusicBrainzEnricher(**({"cache_file": cache_file} if cache_file else {}))
+    df_mb = mb_enricher.enrich(df, reverse=reverse)
 
     # ── Step 3: Finalize & save ───────────────────────────────────────────────
     logger.info("═" * 60)
@@ -107,5 +113,13 @@ if __name__ == "__main__":
         "--limit", type=int, default=None,
         help="Limit to N unique songs (for testing). Omit for full dataset."
     )
+    parser.add_argument(
+        "--reverse", action="store_true",
+        help="Process songs in reverse order (use on a second machine to run in parallel)."
+    )
+    parser.add_argument(
+        "--cache-file", type=str, default=None,
+        help="Path to a custom cache file (e.g. data/cache/musicbrainz_cache_b.json)."
+    )
     args = parser.parse_args()
-    run(limit=args.limit)
+    run(limit=args.limit, reverse=args.reverse, cache_file=args.cache_file)

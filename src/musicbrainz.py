@@ -116,17 +116,27 @@ class MusicBrainzEnricher:
             self.cache[key] = self._fetch_recording(title, artist) or {}
         return self.cache[key]
 
-    def enrich(self, df: pd.DataFrame, save_every: int = 100) -> pd.DataFrame:
+    def enrich(self, df: pd.DataFrame, save_every: int = 100, reverse: bool = False) -> pd.DataFrame:
         """
         Add MusicBrainz columns to `df`.
 
         New columns added:
             mb_duration_ms, mb_release_year, mb_genre_tags,
             mb_artist_country, mb_label
+
+        Parameters
+        ----------
+        reverse : bool
+            If True, process songs in reverse order. Use on a second machine so
+            it works from the Z-end while the first machine works from A.
         """
         # Build the unique (title, artist) pairs to avoid redundant lookups
         pairs = df[["title", "artist"]].drop_duplicates().values.tolist()
-        logger.info("Fetching MusicBrainz data for %d unique songs…", len(pairs))
+        if reverse:
+            pairs = list(reversed(pairs))
+            logger.info("Fetching MusicBrainz data for %d unique songs (reverse order)…", len(pairs))
+        else:
+            logger.info("Fetching MusicBrainz data for %d unique songs…", len(pairs))
 
         for i, (title, artist) in enumerate(tqdm(pairs, desc="MusicBrainz")):
             self.lookup(title, artist)
