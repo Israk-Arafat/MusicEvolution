@@ -21,6 +21,8 @@ DECADE_ORDER = ["1950s", "1960s", "1970s", "1980s", "1990s", "2000s", "2010s", "
 def load_merged(filepath=None) -> pd.DataFrame:
     """Convenience re-export so notebooks only need to import from src.analysis."""
     from src.merger import load_merged as _load
+    if filepath is None:
+        return _load()
     return _load(filepath)
 
 
