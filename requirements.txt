@@ -1,6 +1,7 @@
 # Core data
 pandas>=2.0.0
 numpy>=1.24.0
+scipy>=1.11.0
 
 # HTTP & scraping
 requests>=2.31.0
